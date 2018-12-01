@@ -20,7 +20,7 @@ Feature: showing off behave
 
   Scenario: Count array elements
     Given a set of frameworks
-      |name   |language   |
+      |name   |language  |
       |flask  |python    |
       |django |python    |
       |symfony|php       |
