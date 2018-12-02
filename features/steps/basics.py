@@ -59,7 +59,7 @@ def does_response_contain(context, text):
     """
         Search for the given word in context response
     """
-    assert text in context.response.split()
+    assert text in context.response
 
 
 @given('a set of frameworks')
