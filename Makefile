@@ -3,7 +3,7 @@ behave:
 	docker exec -it behave behave
 
 .PHONY: docker-status
-status:
+docker-status:
 	docker ps --format "{{.Status}}" -af name=behave
 
 .PHONY: docker-stop
