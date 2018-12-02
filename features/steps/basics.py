@@ -1,5 +1,4 @@
 from behave import *
-from pprint import pprint
 """
     Commented examples based on behave documentation
 """
@@ -79,7 +78,6 @@ def is_equal_to_total_framework(context, number):
         The keys are defined in the first row.
         Table.rows method returns a list of behave.model.Row
     """
-    pprint(context.response.rows)
     assert len(context.response.rows) == int(number)
 
 
