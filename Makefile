@@ -1,3 +1,7 @@
+.PHONY: status
+status:
+	docker ps --format "{{.Status}}" -af name=behave
+
 .PHONY: behave
 behave:
 	docker exec -it behave behave
