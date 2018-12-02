@@ -44,10 +44,14 @@ def set_string_to_response(context, word):
 
         context.response is the recommended attribute but it is not mandatory
 
-        The attribute below are managed by behave hence, should not be overwritten
+         https://behave.readthedocs.io/en/latest/api.html#behave.runner.Context
+         lists the attribute managed by behave. It is not advised to overwritte
+         them.
+         Examples:
         - context.table
         - context.text
         - context.failed
+        - ...
     """
     context.response = word
     context.random = word
