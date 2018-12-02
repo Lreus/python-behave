@@ -10,6 +10,25 @@ Feature: showing off behave
     Then the context response should be "hello"
     Then the context response length should be 5
 
+  @wip
+  Scenario Outline: Scenario outline can repeat the scenario
+                    with multiple example
+    Given we set the context response to the word "<string>"
+    Then the context response should be "<string>"
+    Then the context response length should be <number>
+
+    Examples: Single Word
+      |string  |number|
+      |hello   |5   |
+      |warning |7   |
+      |error   |5   |
+
+    Examples: Sentences
+      |string       |number|
+      |hello Ludovic|13    |
+      |It's all good|13    |
+      |I am fine    |9     |
+
   Scenario: allocate some text to context.text attribute
     Given we store the following text
     """
