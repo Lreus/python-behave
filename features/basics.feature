@@ -8,6 +8,7 @@ Feature: showing off behave
   Scenario: Expecting the context response as a string
     Given we set the context response to the word "hello"
     Then the context response should be "hello"
+    Then the context response length should be 5
 
   Scenario: allocate some text to context.text attribute
     Given we store the following text

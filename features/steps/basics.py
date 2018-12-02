@@ -53,6 +53,16 @@ def is_equal_to_response(context, text):
     assert text == context.response
 
 
+@then('the context response length should be {number:d}')
+def response_length(context, number):
+    """
+        the syntax name:type allows to define type variable and restrict the step to
+        this type.
+        This step won't be triggered if number is not an integer
+    """
+    assert number == len(context.response)
+
+
 @then('the context text attribute should contain the word "{text}"')
 def does_response_contain(context, text):
     """
@@ -70,7 +80,7 @@ def store_framework_table(context):
     context.response = context.table
 
 
-@then('the number of framework should be {number}')
+@then('the number of framework should be {number:d}')
 def is_equal_to_total_framework(context, number):
     """
         A context.table attribute is a behave.model.Table.
@@ -78,10 +88,10 @@ def is_equal_to_total_framework(context, number):
         The keys are defined in the first row.
         Table.rows method returns a list of behave.model.Row
     """
-    assert len(context.response.rows) == int(number)
+    assert len(context.response.rows) == number
 
 
-@then('the number of "{language}" frameworks should be {number}')
+@then('the number of "{language}" frameworks should be {number:d}')
 def time_language_appears(context, language, number):
     """
         behave.model.Row class allows the syntax datas = row[key]
@@ -94,4 +104,4 @@ def time_language_appears(context, language, number):
             occurrences[lang] = occurrences[lang] + 1
         else:
             occurrences[lang] = 1
-    assert occurrences[language] == int(number)
+    assert occurrences[language] == number
