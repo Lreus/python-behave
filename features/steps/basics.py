@@ -8,7 +8,7 @@ from behave import *
 def empty_method(context):
     """
         Even if it may not be used, context argument is required for step
-        implementation methods
+        implementation methods. It is an instace of behave.runner.Context
     """
     pass
 
@@ -40,17 +40,26 @@ def set_text_block_to_response(context):
 def set_string_to_response(context, word):
     """
         the bracket syntax {}, allows us to allocate a variable string from
-        the step definition to a parameter
+        the step definition to an attribute.
+
+        context.response is the recommended attribute but it is not mandatory
+
+        The attribute below are managed by behave hence, should not be overwritten
+        - context.table
+        - context.text
+        - context.failed
     """
     context.response = word
+    context.random = word
 
 
 @then('the context response should be "{text}"')
 def is_equal_to_response(context, text):
     """
-        a previously allocated context response is accessible through multiple steps
+        a previously allocated context attribute is accessible through multiple steps.
     """
     assert text == context.response
+    assert text == context.random
 
 
 @then('the context response length should be {number:d}')
