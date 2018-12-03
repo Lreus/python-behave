@@ -10,7 +10,6 @@ Feature: showing off behave
     Then the context response should be "hello"
     Then the context response length should be 5
 
-  @wip
   Scenario Outline: Scenario outline can repeat the scenario
                     with multiple example
     Given we set the context response to the word "<string>"
