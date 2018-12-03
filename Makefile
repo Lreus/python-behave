@@ -1,3 +1,7 @@
+.PHONY: behave-wip
+behave-wip:
+	docker exec -it behave behave --tags @wip
+
 .PHONY: behave
 behave:
 	docker exec -it behave behave
