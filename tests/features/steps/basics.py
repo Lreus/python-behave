@@ -1,7 +1,8 @@
-from behave import *
 """
     Commented examples based on behave documentation
 """
+
+from behave import *
 
 
 @given('we have behave installed')
