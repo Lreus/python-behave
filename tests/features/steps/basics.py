@@ -1,15 +1,15 @@
-"""
-    Commented examples based on behave documentation
-"""
-
 from behave import *
+"""basics.py
+
+Commented test examples based on behave documentation
+"""
 
 
 @given('we have behave installed')
 def empty_method(context):
     """
         Even if it may not be used, context argument is required for step
-        implementation methods. It is an instace of behave.runner.Context
+        implementation methods. It is an instance of behave.runner.Context
     """
     pass
 
@@ -40,13 +40,13 @@ def set_text_block_to_response(context):
 @given('we set the context response to the word "{word}"')
 def set_string_to_response(context, word):
     """
-        the bracket syntax {}, allows us to allocate a variable string from
-        the step definition to an attribute.
+        the Formatted String Literals syntax {}, allows us to allocate a variable
+        string from the step definition to an attribute.
 
         context.response is the recommended attribute but it is not mandatory
 
          https://behave.readthedocs.io/en/latest/api.html#behave.runner.Context
-         lists the attribute managed by behave. It is not advised to overwritte
+         lists the attribute managed by behave. It is not advised to overwrite
          them.
          Examples:
         - context.table
@@ -70,7 +70,7 @@ def is_equal_to_response(context, text):
 @then('the context response length should be {number:d}')
 def response_length(context, number):
     """
-        the syntax name:type allows to define type variable and restrict the step to
+        the syntax 'name:type' allows to define type variable and restrict the step to
         this type.
         This step won't be triggered if number is not an integer
     """
@@ -108,7 +108,7 @@ def is_equal_to_total_framework(context, number):
 @then('the number of "{language}" frameworks should be {number:d}')
 def time_language_appears(context, language, number):
     """
-        behave.model.Row class allows the syntax datas = row[key]
+        behave.model.Row class allows the syntax data = row[key]
         but they are not dictionaries !
     """
     occurrences = {}
