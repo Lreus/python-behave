@@ -1,5 +1,8 @@
 from sample.classes.simple_class import SimpleClass
 from sample.classes.subclasses.simple_subclass import SimpleSubClass
+from urllib.error import URLError, HTTPError
+from http.client import HTTPResponse
+
 from behave import *
 
 
@@ -47,3 +50,18 @@ def the_subclass_shall_inherit_from(context, class_name):
         type(context.Class['subclass']),
         mapped_class
     )
+
+
+@Given('I call the url "{url}"')
+def i_call_the_url(context, url):
+    context.response = SimpleClass.go_to_url(url, "GET")
+
+
+@Then('the response status code should be {code:d}')
+def status_code_is(context, code):
+    assert isinstance(context.response, (HTTPResponse, HTTPError)), \
+        "context.response is neither an HTTPResponse nor an HTTPError: %r" % context.response.__class__
+
+    assert context.response.code == code, \
+        "context response does not match 200: %r " % context.response.code
+
