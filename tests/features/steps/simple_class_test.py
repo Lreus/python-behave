@@ -2,6 +2,7 @@ from sample.classes.simple_class import SimpleClass
 from sample.classes.subclasses.simple_subclass import SimpleSubClass
 from urllib.error import URLError, HTTPError
 from http.client import HTTPResponse
+from requests import Response
 
 from behave import *
 
@@ -60,8 +61,23 @@ def i_call_the_url(context, url):
 @Then('the response status code should be {code:d}')
 def status_code_is(context, code):
     assert isinstance(context.response, (HTTPResponse, HTTPError)), \
-        "context.response is neither an HTTPResponse nor an HTTPError: %r" % context.response.__class__
+        "Failed asserting %r is a HTTPResponse or an HTTPError" % context.response.__class__
 
     assert context.response.code == code, \
-        "context response does not match 200: %r " % context.response.code
+        "Failed asserting {} equals {} ".format(code, context.response.code)
 
+
+@Given('i call the {url} with method {method}')
+def i_call_the_url_with_method(context, url, method):
+    context.response = SimpleClass.go_to_request(url, method)
+
+
+@Then('the request response status code should be {code:d}')
+def response_status_code_is(context, code):
+    assert isinstance(context.response, Response), \
+        "Failed asserting {repr} is a {response_class}".format(
+            response_class='requests.models.Response',
+            repr=repr(context.response),
+        )
+    assert context.response.status_code == code, \
+        "Failed asserting {} equals {} ".format(code, context.response.status_code)
