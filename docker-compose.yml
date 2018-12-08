@@ -14,7 +14,7 @@ services:
     ports:
       - "5430:5432"
     environment:
-      POSTGRES_PASSWORD: pythonlab
+      POSTGRES_PASSWORD: python
       POSTGRES_USER: pythonlab
       POSTGRES_DB: pythonlab
       POSTGRES_VOLUME: ../.postgresql
