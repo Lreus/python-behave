@@ -18,3 +18,5 @@ services:
       POSTGRES_USER: pythonlab
       POSTGRES_DB: pythonlab
       POSTGRES_VOLUME: ../.postgresql
+    volumes:
+      - "./conf/pgsql.init:/docker-entrypoint-initdb.d"
