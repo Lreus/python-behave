@@ -1,7 +1,9 @@
 version: '3'
 services:
   web:
-    build: .
+    build:
+      context: ./dockerFiles/python
+      dockerfile: Dockerfile
     container_name: behave
     ports:
      - "5000:5000"
@@ -20,3 +22,28 @@ services:
       POSTGRES_VOLUME: ../.postgresql
     volumes:
       - "./conf/pgsql.init:/docker-entrypoint-initdb.d"
+
+#  kong:
+#    image: kong:1.0rc3-alpine
+#    container_name: behave_kong
+#    command: bash -c "kong migrations bootstrap; kong start"
+#    depends_on:
+#      - database
+#    environment:
+#      KONG_DATABASE: postgres
+#      KONG_PG_HOST: database
+#      KONG_PG_USER: behave_kong
+#      KONG_PG_PASSWORD: kong
+#      KONG_PG_DATABASE: behave_kong_db
+#      KONG_LOG_LEVEL: info
+#      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+#      KONG_ADMIN_LISTEN_SSL: 0.0.0.0:8444
+#      KONG_PLUGINS: helloworld
+#
+#    links:
+#      - database:database
+#    ports:
+#      - "8000:8000"
+#      - "8443:8443"
+#      - "8001:8001"
+#      - "8444:8444"

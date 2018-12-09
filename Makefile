@@ -12,19 +12,16 @@ docker-status:
 
 .PHONY: docker-stop
 docker-stop:
-	docker stop behave
+	docker-compose stop
 
 .PHONY: docker-run
-docker-run: ./makeLog/compose_build.log
+docker-run: ./dockerFiles/logs/compose_build.log
 	docker-compose up -d
 
-./makeLog/compose_build.log : ./DockerFiles/python/requirements.txt \
- 							  DockerFiles/python/Dockerfile \
- 							  makeLog
-	docker-compose build > ./makeLog/compose_build.log
+./dockerFiles/logs/compose_build.log : ./dockerFiles/python/requirements.txt
+	mkdir ./dockerFiles/logs
+	docker-compose build > ./dockerFiles/logs/compose_build.log
 
-./DockerFiles/python/requirements.txt: requirements.txt
-	echo '#Generated file do not edit' | cat - ./requirements.txt > ./DockerFiles/python/requirements.txt
-
-makeLog:
-	mkdir makeLog
+./dockerFiles/python/requirements.txt: conf/python/requirements.txt
+	echo '#Generated file do not edit'  \
+	| cat - ./conf/python/requirements.txt > ./dockerFiles/python/requirements.txt

@@ -118,4 +118,5 @@ dmypy.json
 .idea
 
 #Project log
-makeLog
+dockerFiles/logs
+dockerFiles/python/requirements.txt
