@@ -18,8 +18,13 @@ docker-stop:
 docker-run: ./makeLog/compose_build.log
 	docker-compose up -d
 
-./makeLog/compose_build.log : requirements.txt Dockerfile makeLog
+./makeLog/compose_build.log : ./DockerFiles/python/requirements.txt \
+ 							  DockerFiles/python/Dockerfile \
+ 							  makeLog
 	docker-compose build > ./makeLog/compose_build.log
+
+./DockerFiles/python/requirements.txt: requirements.txt
+	echo '#Generated file do not edit' | cat - ./requirements.txt > ./DockerFiles/python/requirements.txt
 
 makeLog:
 	mkdir makeLog
