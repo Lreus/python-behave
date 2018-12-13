@@ -1,5 +1,7 @@
 from urllib.request import urlopen, Request
 from urllib.error import URLError
+import requests
+import logging
 
 
 class SimpleClass:
@@ -29,3 +31,24 @@ class SimpleClass:
             return urlopen(request)
         except URLError as error:
             return error
+
+    @staticmethod
+    def go_to_request(url: str, method: str):
+        """go_to_request()
+
+        Perform an http request with the very popular Requests module.
+        Requests is very efficient at building easily complex requests.
+        see http://docs.python-requests.org/en/master/.
+
+        :param url: string of valid url including schema
+        :param method: string of HTTP method
+        :return:
+        """
+        try:
+            return requests.request(method, url)
+        except Exception as error:
+            logging.critical(
+                'Calling {url} with method {method} raised an unhandled exceptions : {Eclass}' \
+                .format(url=url, method=method, Eclass=error.__class__)
+            )
+            return None
