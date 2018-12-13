@@ -1,9 +1,51 @@
-version: '3'
+version: '2.4'
 services:
   web:
-    build: .
+    build:
+      context: ./dockerFiles/python
+      dockerfile: Dockerfile
     container_name: behave
     ports:
      - "5000:5000"
     volumes:
       - "./:/usr/src/app"
+
+  database:
+    image: postgres:11-alpine
+    container_name: behave_pgsql
+    ports:
+      - "5430:5432"
+    environment:
+      POSTGRES_PASSWORD: python
+      POSTGRES_USER: pythonlab
+      POSTGRES_DB: pythonlab
+      POSTGRES_VOLUME: ../.postgresql
+    volumes:
+      - "./conf/pgsql.init:/docker-entrypoint-initdb.d"
+    healthcheck:
+      test: nc -z localhost 5432
+
+  kong:
+    image: kong:1.0rc3-alpine
+    container_name: behave_kong
+    command: >
+      sh -c "kong migrations bootstrap && sh /docker-entrypoint.sh kong docker-start"
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: database
+      KONG_PG_USER: behave_kong
+      KONG_PG_PASSWORD: kong
+      KONG_PG_DATABASE: behave_kong_db
+      KONG_LOG_LEVEL: info
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_ADMIN_LISTEN_SSL: 0.0.0.0:8444
+    links:
+      - database:database
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
