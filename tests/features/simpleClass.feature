@@ -28,4 +28,4 @@ Feature: Test a simple class out of the test directory
     |url                        |method|code|
     |http://www.google.com/hello|GET   |404 |
     |http://www.google.com      |GET   |200 |
-    |https://www.google.com     |GET   |404 |
+    |https://www.google.com     |GET   |200 |
