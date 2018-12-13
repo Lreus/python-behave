@@ -19,7 +19,7 @@ docker-run: ./dockerFiles/logs/compose_build.log
 	docker-compose up -d
 
 ./dockerFiles/logs/compose_build.log : ./dockerFiles/python/requirements.txt
-	mkdir ./dockerFiles/logs
+	mkdir -p ./dockerFiles/logs
 	docker-compose build > ./dockerFiles/logs/compose_build.log
 
 ./dockerFiles/python/requirements.txt: conf/python/requirements.txt
