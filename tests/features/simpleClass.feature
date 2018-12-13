@@ -24,7 +24,6 @@ Feature: Test a simple class out of the test directory
     Given i call the <url> with method <method>
     Then the request response status code should be <code>
 
-  @wip
   Examples:
     |url                        |method|code|
     |http://www.google.com/hello|GET   |404 |
