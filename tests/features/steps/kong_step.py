@@ -19,6 +19,27 @@ def build_unexpected_code_message(expected_code: int, received_code: int) -> str
         .format(code=received_code, expectation=expected_code)
 
 
+def context_has_valid_response(context: Context = None) -> bool:
+    """context_has_valid_response(context: Context= None)
+
+    Assert context has an attribute 'response' and that it contains
+    a requests.Response object
+
+    :param context: behave context manager
+    :type context: Context
+
+    :return: True if all assertions were successful
+    :rtype: bool
+
+    :raise: AssertionError
+    """
+    assert hasattr(context, 'response'), 'No response attribute set in context manager'
+    assert isinstance(context.response, Response), \
+        'Attribute response in context manager contains {class_name}'.format(class_name=context.response.__class__)
+
+    return True
+
+
 @Given('kong is accessible at "{url}"')
 def kong_is_accessible(context: Context, url: str = '') -> None:
     """kong_is_accessible
@@ -180,7 +201,8 @@ def request_code_equals(context: Context, code: int) -> None:
     """request_code_equals
 
     Behave background step: Then the request status code should be {code:d}.
-    Assert context.response contains a requests.Response object and that it's
+     and that it's
+    Uses context_has_valid_response to validate context response.
     status_code attribute matches code parameter.
 
     :param context: Behave context object
@@ -193,14 +215,24 @@ def request_code_equals(context: Context, code: int) -> None:
 
     :raise: AssertionError
     """
-    context.response: Response
-    assert hasattr(context, 'response'), 'No response attribute set in context manager'
-    assert isinstance(context.response, Response), \
-        'Attribute response in context manager contains {class_name}'.format(class_name=context.response.__class__)
-    assert context.response.status_code == code, build_unexpected_code_message(200, context.response.status_code)
+    if context_has_valid_response(context):
+        assert context.response.status_code == code, build_unexpected_code_message(200, context.response.status_code)
 
 
-# And I request kong for service "my-custom-service"
-# Then the response status code should be 200
-# And the response content should contain Json
+@Then('the response content should contain JSON')
+def is_response_json(context: Context):
+    """is_response_json
 
+        Behave background step: Then the response content should contain JSON
+        Uses context_has_valid_response to validate context response.
+        Decode as Json the context.response.content and loads it context.json_response.
+
+        :param context: Behave context object
+        :type context: Context
+
+        :rtype: None
+
+        :raise: AssertionError
+        """
+    if context_has_valid_response(context):
+        context.json_response = json.loads(context.response.content)
