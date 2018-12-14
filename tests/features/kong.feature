@@ -9,5 +9,11 @@ Scenario: Perform service creation
   When I create a service named "my-custom-service" pointing to "http://www.google.com"
   And I request kong for service "my-custom-service"
   Then the request status code should be 200
-  #And the response content should contain Json
+  And the response content should contain Json
+  And the response should have the matching key-values pairs
+    |key     |value            |
+    |name    |my-custom-service|
+    |host    |www.google.com   |
+    |protocol|http             |
+    |port    |80               |
 

@@ -3,6 +3,8 @@ from behave import *
 from requests import Response
 import requests
 import json
+import logging
+import pprint
 
 
 def build_unexpected_code_message(expected_code: int, received_code: int) -> str:
@@ -33,7 +35,9 @@ def context_has_valid_response(context: Context = None) -> bool:
 
     :raise: AssertionError
     """
-    assert hasattr(context, 'response'), 'No response attribute set in context manager'
+    assert hasattr(context, 'response') and context.response is not None,\
+        'No response attribute set in context manager'
+
     assert isinstance(context.response, Response), \
         'Attribute response in context manager contains {class_name}'.format(class_name=context.response.__class__)
 
@@ -223,16 +227,54 @@ def request_code_equals(context: Context, code: int) -> None:
 def is_response_json(context: Context):
     """is_response_json
 
-        Behave background step: Then the response content should contain JSON
-        Uses context_has_valid_response to validate context response.
-        Decode as Json the context.response.content and loads it context.json_response.
+    Behave background step: Then the response content should contain JSON
+    Uses context_has_valid_response to validate context response.
+    Decode as Json the context.response.content and loads it context.json_response.
 
-        :param context: Behave context object
-        :type context: Context
+    :param context: Behave context object
+    :type context: Context
 
-        :rtype: None
+    :rtype: None
 
-        :raise: AssertionError
-        """
+    :raise: AssertionError
+    """
     if context_has_valid_response(context):
         context.json_response = json.loads(context.response.content)
+        logging.basicConfig(filename='/usr/src/app/log.txt', level=logging.DEBUG)
+
+
+@Then('the response should have the matching key-values pairs')
+def response_contain_key_value(context: Context) -> None:
+    """is_response_json
+
+    Behave background step: Then the response should have the matching key-values pairs.
+    Check if each key/value pair from the provided context table appears in context.json_response.
+
+    :param context: Behave context object
+    :type context: Context
+
+    :rtype: None
+
+    :raise: AssertionError
+    """
+    assert hasattr(context, 'json_response') and context.json_response is not None, \
+        'No json_response attribute in context manager'
+
+    assert isinstance(context.json_response, dict), \
+        'context.json_response is not a dict but a {class_name}'.format(class_name=context.json_response.__class__)
+
+    for row in context.table.rows:
+        assert row['key'] in context.json_response, 'Unable to find key {key} in json response'.format(key=row['key'])
+
+        incoming_value = context.json_response[row['key']]
+        assert row['value'] == str(incoming_value), \
+            '''
+            Unexpected value for json_response["{key}"] got {unexpected} <{unexpected_class}> 
+            while expecting {value} <{class_name}>
+            '''.format(
+                key=row['key'],
+                unexpected=context.json_response[row['key']],
+                unexpected_class=context.json_response[row['key']].__class__,
+                value=row['value'],
+                class_name=row['value'].__class__
+            )
