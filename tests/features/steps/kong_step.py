@@ -1,15 +1,26 @@
 from behave.runner import Context
 from behave import *
+from requests import Response
 import requests
 import json
 
 
-def build_unexpected_code_message(expected: int, received: int) -> str:
-    return 'Unexpected status code: {code} while expecting {expectation} '.format(code=received, expectation=expected)
+def build_unexpected_code_message(expected_code: int, received_code: int) -> str:
+    """build_unexpected_code_message(expected_code: int, received_code: int)
+
+    :param expected_code: The expected http code
+    :param received_code: The received http code
+
+    :return: Error message formatted with parameters
+
+    :rtype: str
+    """
+    return 'Unexpected status code: {code} while expecting {expectation} '\
+        .format(code=received_code, expectation=expected_code)
 
 
 @Given('kong is accessible at "{url}"')
-def kong_is_accessible(context: object, url: str = '') -> None:
+def kong_is_accessible(context: Context, url: str = '') -> None:
     """kong_is_accessible
 
     Behave background step: Given kong is accessible at "{url}".
@@ -19,13 +30,14 @@ def kong_is_accessible(context: object, url: str = '') -> None:
 
     :param context: Behave context object
     :type context: behave.runner.Context
+
     :param url: The url needed use to contact kong api
     :type url: str
+
     :rtype: None
+
     :raise: AssertionError
     """
-    context: Context
-
     response = requests.get(url)
     api_error = 'No api answered at {url} with a status code 200'.format(url=url)
 
@@ -41,22 +53,25 @@ def kong_is_accessible(context: object, url: str = '') -> None:
 
 
 @Given('there is no service named "{service_name}"')
-def there_is_no_service(context: object, service_name: str = '') -> None:
+def there_is_no_service(context: Context, service_name: str = '') -> None:
     """there_is_no_service
 
     Behave background step: Given there is no service named "{service_name}".
     Request the provided service name to kong api.
+    If the service exists call step 'Given i delete the service' and perform a new request.
     Expects the response status code 404 Not found.
     Uses context.kong_url string initialized in kong_is_accessible background test.
 
     :param context: Behave context object
     :type context: behave.runner.Context
+
     :param service_name: the name of the expected missing service
     :type service_name: str
+
     :rtype: None
+
     :raise: AssertionError
     """
-    context: Context
     context.kong_url: str
 
     url = ''.join((context.kong_url, '/services/', service_name, '/'))
@@ -74,7 +89,7 @@ def there_is_no_service(context: object, service_name: str = '') -> None:
 
 
 @When('I create a service named "{service_name}" pointing to "{service_url}"')
-def i_create_service(context: object, service_name: str = '', service_url: str = '') -> None:
+def i_create_service(context: Context, service_name: str = '', service_url: str = '') -> None:
     """i_create_service
 
     Behave background step: When I create a service named "{service_name}".
@@ -84,14 +99,17 @@ def i_create_service(context: object, service_name: str = '', service_url: str =
 
     :param context: Behave context object
     :type context: behave.runner.Context
+
     :param service_name: the name of the expected missing service
     :type service_name: str
+
     :param service_url: the url pointed by the new kong service
     :type service_url: str
+
     :rtype: None
+
     :raise: AssertionError
     """
-    context: Context
     context.kong_url: str
 
     url = ''.join((context.kong_url, '/services/'))
@@ -105,27 +123,82 @@ def i_create_service(context: object, service_name: str = '', service_url: str =
 
 
 @Given('I delete the service "{service_name}"')
-def i_delete_service(context: object, service_name: str = '') -> None:
+def i_delete_service(context: Context, service_name: str = '') -> None:
     """i_delete_service
 
     Behave background step: Given I delete the service "{service_name}".
     Request kong to delete a service named with the provided name.
     Expects the response to be a 204 No content.
+    Uses context.kong_url string initialized in kong_is_accessible background test.
 
     :param context: Behave context object
     :type context: behave.runner.Context
+
     :param service_name: the name of the expected missing service
     :type service_name: str
+
     :rtype: None
+
     :raise: AssertionError
     """
-    context: Context
     context.kong_url: str
 
     url = ''.join((context.kong_url, '/services/', service_name, '/'))
     response = requests.delete(url)
 
     assert response.status_code == 204, build_unexpected_code_message(204, response.status_code)
+
+
+@When('I request kong for service "{service_name}"')
+def i_request_service(context: Context, service_name: str = '') -> None:
+    """i_request_service
+
+    Behave background step: When I request kong for service "{service_name}".
+    Request kong for a service named with provided parameter
+    Store response in context.response attribute.
+    Uses context.kong_url string initialized in kong_is_accessible background test.
+
+    :param context: Behave context object
+    :type context: behave.runner.Context
+
+    :param service_name: the name of the required service
+    :type service_name: str
+
+    :rtype: None
+
+    :raise: AssertionError
+    """
+    context.kong_url: str
+
+    url = ''.join((context.kong_url, '/services/', service_name, '/'))
+
+    context.response = requests.get(url)
+
+
+@Then('the request status code should be {code:d}')
+def request_code_equals(context: Context, code: int) -> None:
+    """request_code_equals
+
+    Behave background step: Then the request status code should be {code:d}.
+    Assert context.response contains a requests.Response object and that it's
+    status_code attribute matches code parameter.
+
+    :param context: Behave context object
+    :type context: Context
+
+    :param code: Integer matching an HTTP status code
+    :type code: int
+
+    :rtype: None
+
+    :raise: AssertionError
+    """
+    context.response: Response
+    assert hasattr(context, 'response'), 'No response attribute set in context manager'
+    assert isinstance(context.response, Response), \
+        'Attribute response in context manager contains {class_name}'.format(class_name=context.response.__class__)
+    assert context.response.status_code == code, build_unexpected_code_message(200, context.response.status_code)
+
 
 # And I request kong for service "my-custom-service"
 # Then the response status code should be 200

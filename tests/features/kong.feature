@@ -7,7 +7,7 @@ Background:
 Scenario: Perform service creation
   Given there is no service named "my-custom-service"
   When I create a service named "my-custom-service" pointing to "http://www.google.com"
-  #And I request kong for service "my-custom-service"
-  #Then the response status code should be 200
+  And I request kong for service "my-custom-service"
+  Then the request status code should be 200
   #And the response content should contain Json
 
