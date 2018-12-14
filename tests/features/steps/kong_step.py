@@ -1,7 +1,9 @@
 from behave.runner import Context
 from behave.model import Table
-from behave import *
 from requests import Response
+
+from behave import *
+
 import requests
 import json
 
