@@ -1,4 +1,5 @@
 from behave.runner import Context
+from behave.model import Table
 from behave import *
 from requests import Response
 import requests
@@ -255,11 +256,15 @@ def response_contain_key_value(context: Context) -> None:
 
     :raise: AssertionError
     """
+    context.table: Table
     assert hasattr(context, 'json_response') and context.json_response is not None, \
         'No json_response attribute in context manager'
 
     assert isinstance(context.json_response, dict), \
         'context.json_response is not a dict but a {class_name}'.format(class_name=context.json_response.__class__)
+
+    assert 'key' in context.table.headings, 'Please use the word "key" as first column header for this step'
+    assert 'value' in context.table.headings, 'Please use the word "value" as first column header for this step'
 
     for row in context.table.rows:
         assert row['key'] in context.json_response, 'Unable to find key {key} in json response'.format(key=row['key'])
