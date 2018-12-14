@@ -3,8 +3,6 @@ from behave import *
 from requests import Response
 import requests
 import json
-import logging
-import pprint
 
 
 def build_unexpected_code_message(expected_code: int, received_code: int) -> str:
@@ -240,14 +238,14 @@ def is_response_json(context: Context):
     """
     if context_has_valid_response(context):
         context.json_response = json.loads(context.response.content)
-        logging.basicConfig(filename='/usr/src/app/log.txt', level=logging.DEBUG)
 
 
 @Then('the response should have the matching key-values pairs')
 def response_contain_key_value(context: Context) -> None:
-    """is_response_json
+    """response_contain_key_value
 
     Behave background step: Then the response should have the matching key-values pairs.
+    Validate that the context manager has an attribute json_response.
     Check if each key/value pair from the provided context table appears in context.json_response.
 
     :param context: Behave context object
