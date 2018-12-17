@@ -1,14 +1,15 @@
+from behave import *
+
 from behave.runner import Context
 from behave.model import Table
 from requests import Response
-
-from behave import *
+from typing import List
 
 import requests
 import json
 
 
-def build_unexpected_code_message(expected_code: int, received_code: int) -> str:
+def build_unexpected_code_message(expected_code: List[int], received_code: int) -> str:
     """build_unexpected_code_message(expected_code: int, received_code: int)
 
     :param expected_code: The expected http code
@@ -19,7 +20,7 @@ def build_unexpected_code_message(expected_code: int, received_code: int) -> str
     :rtype: str
     """
     return 'Unexpected status code: {code} while expecting {expectation} '\
-        .format(code=received_code, expectation=expected_code)
+        .format(code=received_code, expectation=' or '.join(expected_code))
 
 
 def context_has_valid_response(context: Context = None) -> bool:
@@ -68,7 +69,7 @@ def kong_is_accessible(context: Context, url: str = '') -> None:
     api_error = 'No api answered at {url} with a status code 200'.format(url=url)
 
     assert isinstance(response, requests.Response), api_error
-    assert response.status_code == 200, build_unexpected_code_message(200, response.status_code)
+    assert response.status_code == 200, build_unexpected_code_message([200], response.status_code)
 
     response_content = json.loads(response.content)
 
@@ -111,7 +112,7 @@ def there_is_no_service(context: Context, service_name: str = '') -> None:
         '''.format(service_name=service_name))
         response = requests.get(url)
 
-    assert response.status_code == 404, build_unexpected_code_message(404, response.status_code)
+    assert response.status_code == 404, build_unexpected_code_message([404], response.status_code)
 
 
 @When('I create a service named "{service_name}" pointing to "{service_url}"')
@@ -145,7 +146,7 @@ def i_create_service(context: Context, service_name: str = '', service_url: str 
     }
     response = requests.post(url, post_data)
 
-    assert response.status_code == 201, build_unexpected_code_message(201, response.status_code)
+    assert response.status_code == 201, build_unexpected_code_message([201], response.status_code)
 
 
 @Given('I delete the service "{service_name}"')
@@ -172,7 +173,7 @@ def i_delete_service(context: Context, service_name: str = '') -> None:
     url = ''.join((context.kong_url, '/services/', service_name, '/'))
     response = requests.delete(url)
 
-    assert response.status_code == 204, build_unexpected_code_message(204, response.status_code)
+    assert response.status_code == 204, build_unexpected_code_message([204], response.status_code)
 
 
 @When('I request kong for service "{service_name}"')
@@ -221,7 +222,7 @@ def request_code_equals(context: Context, code: int) -> None:
     :raise: AssertionError
     """
     if context_has_valid_response(context):
-        assert context.response.status_code == code, build_unexpected_code_message(200, context.response.status_code)
+        assert context.response.status_code == code, build_unexpected_code_message([200], context.response.status_code)
 
 
 @Then('the response content should contain JSON')
@@ -283,3 +284,84 @@ def response_contain_key_value(context: Context) -> None:
                 value=row['value'],
                 class_name=row['value'].__class__
             )
+
+
+@When('I create a consumer named "{username}" with id "{custom_id}"')
+def i_create_consumer(context: Context, username: str = '', custom_id: str = '') -> None:
+    """there_is_a_consumer_identified_by
+
+        Behave background step: When I create a consumer named "{username}" with id "{custom_id}".
+        Creates a consumer
+        Uses context.kong_url string initialized in kong_is_accessible background test.
+
+        :param context: Behave context object
+        :type context: Context
+
+        :param username: The consumer Username
+        :type username: str
+
+        :param custom_id: The consumer custom id
+        :type custom_id: str
+
+        :rtype: None
+
+        :raise: AssertionError
+        """
+    context.kong_url: str
+    user = {
+        'username': username,
+        'custom_id': custom_id,
+    }
+
+    url = ''.join((context.kong_url, '/consumers/'))
+    response = requests.post(url, user)
+
+    assert response.status_code == 201, build_unexpected_code_message([201], response.status_code)
+
+
+@Given('there is a consumer identified by')
+def there_is_a_consumer_identified_by(context: Context) -> None:
+    """there_is_a_consumer_identified_by
+
+    Behave background step: Given there is a consumer identified by.
+    Ensure a consumer exists in kong service.
+    Attempt to get the consumer with provided credentials in context.Model.Table.
+    Execute consumer creation step if the consumer is not found.
+    Perform a second Call to store the consumer id.
+    Uses context.kong_url string initialized in kong_is_accessible background test.
+
+    :param context: Behave context object
+    :type context: Context
+
+    :rtype: None
+
+    :raise: AssertionError
+    """
+    context.table: Table
+    context.kong_url: str
+
+    assert 'username' in context.table.headings, 'Please use the word "username" as first column header for this step'
+    assert 'custom_id' in context.table.headings, 'Please use the word "custom_id" as first column header for this step'
+
+    user = {
+        'username': context.table.rows[0]['username'],
+        'custom_id': context.table.rows[0]['custom_id'],
+    }
+
+    url = ''.join((context.kong_url, '/consumers/', user['username']))
+
+    response = requests.get(url)
+
+    assert response.status_code in [404, 200], build_unexpected_code_message([404, 200], response.status_code)
+
+    if response.status_code == 404:
+        context.execute_steps(u'''
+            When I create a consumer named "{username}" with id "{custom_id}"
+            '''.format(**user)
+        )
+        response = requests.get(url)
+
+    assert response.status_code == 200, build_unexpected_code_message([200], response.status_code)
+
+
+
