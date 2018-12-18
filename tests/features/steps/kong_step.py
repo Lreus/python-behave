@@ -28,6 +28,20 @@ def build_unexpected_code_message(
             expectation=' or '.join(str(code) for code in expected_code))
 
 
+def build_wrong_heading_message(key: str, column_position: str) -> str:
+    """build_wrong_heading_message(key: str, column_position: str)
+
+    :param key: The expected label key
+    :param column_position: the required column position
+
+    :rtype: str
+    """
+    return 'Use the word "{label}" as {position} column header for this step'\
+        .format(
+            label=key,
+            position=column_position)
+
+
 def context_has_valid_response(context: Context = None) -> bool:
     """context_has_valid_response(context: Context= None)
 
@@ -299,10 +313,10 @@ def response_contain_key_value(context: Context) -> None:
         .format(class_name=context.json_response.__class__)
 
     assert 'key' in context.table.headings,\
-        'Please use the word "key" as first column header for this step'
+        build_wrong_heading_message("key", "first")
 
     assert 'value' in context.table.headings,\
-        'Please use the word "value" as first column header for this step'
+        build_wrong_heading_message("value", "second")
 
     for row in context.table.rows:
         assert row['key'] in context.json_response,\
@@ -389,10 +403,10 @@ def there_is_a_consumer_identified_by(context: Context) -> None:
     context.kong_url: str
 
     assert 'username' in context.table.headings,\
-        'Please use the word "username" as first column header for this step'
+        build_wrong_heading_message("username", "first")
 
     assert 'custom_id' in context.table.headings,\
-        'Please use the word "custom_id" as first column header for this step'
+        build_wrong_heading_message("custom_id", "second")
 
     user = {
         'username': context.table.rows[0]['username'],
@@ -417,3 +431,99 @@ def there_is_a_consumer_identified_by(context: Context) -> None:
     assert response.status_code == 200, build_unexpected_code_message(
         [200],
         response.status_code)
+
+    context.user = json.loads(response.content)
+
+
+@When('I activate the oauth2 plugin for "{service_name}" with these parameters')
+def enable_oauth2_plugin(context: Context, service_name: str = '') -> None:
+    """enable_oauth2_plugin
+
+    Behave background step: When I activate the oauth2 plugin for
+    "{service_name}" with this configuration.
+    Use the provided context.model.Table to call Oauth2 plugin activation
+    on specified service.
+
+    Uses context.kong_url string initialized in kong_is_accessible background
+    test.
+
+    :param context: Behave context object
+    :type context: Context
+
+    :param service_name: Name used to create kong service
+    :type service_name: str
+
+    :rtype: None
+
+    :raise: AssertionError
+    """
+    context.table: Table
+    context.kong_url: str
+
+    url = ''.join((context.kong_url, '/services/', service_name, '/plugins'))
+
+    for label, position in {"attribute": "first", "value": "second"}.items():
+        assert label in context.table.headings, \
+            build_wrong_heading_message(label, position)
+
+    data = {''.join(('config.', k)): v for k, v in context.table.rows}
+    data['name'] = 'oauth2'
+
+    response = requests.post(url, data)
+
+    assert response.status_code == 201, \
+        build_unexpected_code_message([201], response.status_code)
+
+from pprint import pprint
+@When('I provision the current customer with these parameters')
+def provision_customer(context: Context) -> None:
+    """provision_customer
+
+    Behave background step: I provision the current customer with these
+    parameters.
+
+    Use the provided context.model.Table to provide Oauth2 credentials for a
+    consumer
+
+    Uses context.kong_url string initialized in kong_is_accessible background
+    test.
+    Expects to found a dict in context.user including custom_id key.
+
+    :param context: Behave context object
+    :type context: Context
+
+    :rtype: None
+
+    :raise: AssertionError
+    """
+    context.table: Table
+    context.kong_url: str
+    context.user: dict
+
+    assert hasattr(context, 'user'), \
+        'context manager does not have a "user" attribute'
+
+    assert isinstance(context.user, dict), 'context.user is not a dictionary'
+
+    assert 'id' in context.user, \
+        'Cannot found key id in context.user dict'
+
+    for label, position in {'parameter': 'first', 'value': 'second'}.items():
+        assert label in context.table.headings, \
+            build_wrong_heading_message(label, position)
+
+    url = ''.join((
+        context.kong_url,
+        '/consumers/',
+        context.user['id'],
+        '/oauth2'))
+
+    data = {k: v for k, v in context.table.rows}
+
+    response = requests.post(url, data)
+    # Debug lines
+    print(response.status_code, response.content)
+    raise Exception()
+
+    assert response.status_code == 201, \
+        build_unexpected_code_message([201], response.status_code)
