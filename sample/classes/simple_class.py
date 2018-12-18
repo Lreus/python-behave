@@ -1,6 +1,8 @@
 from urllib.request import urlopen, Request
 from urllib.error import URLError
 import requests
+from requests import Response
+from typing import Optional
 import logging
 
 
@@ -33,7 +35,7 @@ class SimpleClass:
             return error
 
     @staticmethod
-    def go_to_request(url: str, method: str):
+    def go_to_request(url: str, method: str) -> Optional[Response]:
         """go_to_request()
 
         Perform an http request with the very popular Requests module.
@@ -42,13 +44,17 @@ class SimpleClass:
 
         :param url: string of valid url including schema
         :param method: string of HTTP method
+
         :return:
+        :rtype: Response || None
         """
         try:
             return requests.request(method, url)
         except Exception as error:
             logging.critical(
-                'Calling {url} with method {method} raised an unhandled exceptions : {Eclass}' \
-                .format(url=url, method=method, Eclass=error.__class__)
+                '''
+                Calling {url} with method {method} raised an unhandled 
+                exceptions : {E_class}
+                '''.format(url=url, method=method, E_class=error.__class__)
             )
             return None
