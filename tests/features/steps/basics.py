@@ -1,3 +1,4 @@
+from behave.runner import Context
 from behave import *
 """basics.py
 
@@ -6,7 +7,7 @@ Commented test examples based on behave documentation
 
 
 @given('we have behave installed')
-def empty_method(context):
+def empty_method(context: Context) -> None:
     """
         Even if it may not be used, context argument is required for step
         implementation methods. It is an instance of behave.runner.Context
@@ -15,21 +16,21 @@ def empty_method(context):
 
 
 @when('we implement a test')
-def assert_obvious(context):
+def assert_obvious(context: Context) -> None:
     """
-        A failed assertion will raise an exception and therefore make the test fail
-        if it has not been caught
+        A failed assertion will raise an exception and therefore make the test
+        fail if it has not been caught.
     """
     assert True is not False
 
 
 @then('behave will test it for that')
-def check_context(context):
+def check_context(context: Context) -> None:
     assert context.failed is False
 
 
 @given('we store the following text')
-def set_text_block_to_response(context):
+def set_text_block_to_response(context) -> None:
     """
         The decorator will allocate the content of a following text block
         (delimited by three double quotes) to context.text attribute
@@ -38,10 +39,10 @@ def set_text_block_to_response(context):
 
 
 @given('we set the context response to the word "{word}"')
-def set_string_to_response(context, word):
+def set_string_to_response(context, word) -> None:
     """
-        the Formatted String Literals syntax {}, allows us to allocate a variable
-        string from the step definition to an attribute.
+        the Formatted String Literals syntax {}, allows us to allocate a
+        variable string from the step definition to an attribute.
 
         context.response is the recommended attribute but it is not mandatory
 
@@ -59,26 +60,27 @@ def set_string_to_response(context, word):
 
 
 @then('the context response should be "{text}"')
-def is_equal_to_response(context, text):
+def is_equal_to_response(context: Context, text: str = '') -> None:
     """
-        a previously allocated context attribute is accessible through multiple steps.
+        A previously allocated context attribute is accessible through
+        multiple steps.
     """
     assert text == context.response
     assert text == context.random
 
 
 @then('the context response length should be {number:d}')
-def response_length(context, number):
+def response_length(context: Context, number: int) -> None:
     """
-        the syntax 'name:type' allows to define type variable and restrict the step to
-        this type.
+        the syntax 'name:type' allows to define type variable and restrict the
+        step to this type.
         This step won't be triggered if number is not an integer
     """
     assert number == len(context.response)
 
 
 @then('the context text attribute should contain the word "{text}"')
-def does_response_contain(context, text):
+def does_response_contain(context: Context, text: str = '') -> None:
     """
         Search for the given word in context response
     """
@@ -86,16 +88,16 @@ def does_response_contain(context, text):
 
 
 @given('a set of frameworks')
-def store_framework_table(context):
+def store_framework_table(context) -> None:
     """
-        A two dimensional array can be provided as a variable. It will be available
-        in the context.table attribute.
+        A two dimensional array can be provided as a variable. It will be
+        available in the context.table attribute.
     """
     context.response = context.table
 
 
 @then('the number of framework should be {number:d}')
-def is_equal_to_total_framework(context, number):
+def is_equal_to_total_framework(context: Context, number: int) -> None:
     """
         A context.table attribute is a behave.model.Table.
         It contains rows of key/value elements.
@@ -106,7 +108,11 @@ def is_equal_to_total_framework(context, number):
 
 
 @then('the number of "{language}" frameworks should be {number:d}')
-def time_language_appears(context, language, number):
+def time_language_appears(
+        context: Context,
+        number: int,
+        language: str = ''
+) -> None:
     """
         behave.model.Row class allows the syntax data = row[key]
         but they are not dictionaries !
