@@ -474,7 +474,7 @@ def enable_oauth2_plugin(context: Context, service_name: str = '') -> None:
     assert response.status_code == 201, \
         build_unexpected_code_message([201], response.status_code)
 
-from pprint import pprint
+
 @When('I provision the current customer with these parameters')
 def provision_customer(context: Context) -> None:
     """provision_customer
@@ -521,9 +521,6 @@ def provision_customer(context: Context) -> None:
     data = {k: v for k, v in context.table.rows}
 
     response = requests.post(url, data)
-    # Debug lines
-    print(response.status_code, response.content)
-    raise Exception()
 
     assert response.status_code == 201, \
         build_unexpected_code_message([201], response.status_code)
