@@ -1,6 +1,6 @@
 .PHONY: behave-wip
 behave-wip:
-	docker exec -it behave behave --tags @wip
+	docker exec -it behave behave -k --tags @wip
 
 .PHONY: behave
 behave:
@@ -18,7 +18,8 @@ docker-stop:
 docker-run: ./dockerFiles/logs/compose_build.log
 	docker-compose up -d
 
-./dockerFiles/logs/compose_build.log : ./dockerFiles/python/requirements.txt
+./dockerFiles/logs/compose_build.log : ./dockerFiles/python/requirements.txt \
+									   ./dockerFiles/python/Dockerfile
 	mkdir -p ./dockerFiles/logs
 	docker-compose build > ./dockerFiles/logs/compose_build.log
 
