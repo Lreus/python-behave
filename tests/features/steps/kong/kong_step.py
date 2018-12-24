@@ -110,9 +110,8 @@ def there_is_no_service(context: Context, service_name: str = '') -> None:
 
     Behave background step: Given there is no service named "{service_name}".
     Request the provided service name to kong api.
-    If the service exists call step 'Given i delete the service' and perform a
-    new request.
     Expects the response status code 404 Not found.
+
     Uses context.kong_url string initialized in kong_is_accessible background
     test.
 
@@ -130,14 +129,6 @@ def there_is_no_service(context: Context, service_name: str = '') -> None:
 
     url = ''.join((context.kong_url, '/services/', service_name, '/'))
     response = requests.get(url)
-
-    if response.status_code == 200:
-        # If the service already exists (maybe from a previous test suite)
-        # Execute the test suite to delete it and perform another call
-        context.execute_steps(u'''
-            Given i delete the service "{service_name}"
-        '''.format(service_name=service_name))
-        response = requests.get(url)
 
     assert response.status_code == 404, build_unexpected_code_message(
         [404],
@@ -192,6 +183,7 @@ def i_delete_service(context: Context, service_name: str = '') -> None:
     Behave background step: Given I delete the service "{service_name}".
     Request kong to delete a service named with the provided name.
     Expects the response to be a 204 No content.
+
     Uses context.kong_url string initialized in kong_is_accessible background
     test.
 
@@ -377,6 +369,8 @@ def i_create_consumer(
         [201],
         response.status_code)
 
+    context.user = json.loads(response.content);
+
 
 @Given('there is a consumer identified by')
 def there_is_a_consumer_identified_by(context: Context) -> None:
@@ -387,8 +381,6 @@ def there_is_a_consumer_identified_by(context: Context) -> None:
     Attempt to get the consumer with provided credentials in
     context.Model.Table.
 
-    Execute consumer creation step if the consumer is not found.
-    Perform a second Call to store the consumer id.
     Uses context.kong_url string initialized in kong_is_accessible background
     test.
 
@@ -416,17 +408,6 @@ def there_is_a_consumer_identified_by(context: Context) -> None:
     url = ''.join((context.kong_url, '/consumers/', user['username']))
 
     response = requests.get(url)
-
-    assert response.status_code in [404, 200], build_unexpected_code_message(
-        [404, 200],
-        response.status_code)
-
-    if response.status_code == 404:
-        context.execute_steps(u'''
-            When I create a consumer named "{username}" with id "{custom_id}"
-            '''.format(**user)
-        )
-        response = requests.get(url)
 
     assert response.status_code == 200, build_unexpected_code_message(
         [200],
@@ -475,7 +456,7 @@ def enable_oauth2_plugin(context: Context, service_name: str = '') -> None:
         build_unexpected_code_message([201], response.status_code)
 
 
-@When('I provision the current customer with these parameters')
+@When('I provision the current consumer with these parameters')
 def provision_customer(context: Context) -> None:
     """provision_customer
 
